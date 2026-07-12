@@ -198,12 +198,13 @@ function saveLocal(s){ try{ localStorage.setItem(LOCAL_KEY, JSON.stringify(s)); 
 async function fetchRemote(){
   const res = await fetch(KV_URL, {cache:"no-store"});
   if(res.status===404) return null;
-  if(!res.ok) throw new Error("fetch failed");
+  if(!res.ok) throw new Error("fetch failed: " + res.status);
   const text = await res.text();
   return text ? JSON.parse(text) : null;
 }
 async function pushRemote(s){
-  await fetch(KV_URL, {method:"POST", body: JSON.stringify(s)});
+  const res = await fetch(KV_URL, {method:"POST", body: JSON.stringify(s)});
+  if(!res.ok) throw new Error("push failed: " + res.status);
 }
 
 function completedCount(){
@@ -310,6 +311,7 @@ async function persist(){
 
 async function syncLoop(){
   if(!SYNC_ON) return;
+  const badge = document.getElementById("syncBadge");
   try{
     const remote = await fetchRemote();
     if(remote){
@@ -322,7 +324,13 @@ async function syncLoop(){
         if(hasInitialized) announceUpdate();
       }
     }
-  }catch(e){}
+    badge.textContent = "synced \u00b7 last check " + new Date().toLocaleTimeString();
+    badge.classList.add("live");
+  }catch(e){
+    console.error("EGAO bingo sync error:", e);
+    badge.textContent = "sync error: " + e.message + " (check console)";
+    badge.classList.remove("live");
+  }
 }
 
 let hasInitialized = false;
@@ -414,7 +422,8 @@ async function init(){
       badge.textContent = "synced across all visitors";
       badge.classList.add("live");
     }catch(e){
-      badge.textContent = "sync unavailable, saving locally";
+      console.error("EGAO bingo initial sync error:", e);
+      badge.textContent = "sync unavailable: " + e.message;
     }
     setInterval(syncLoop, 1000);
   } else {
