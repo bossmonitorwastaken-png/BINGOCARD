@@ -52,6 +52,8 @@
   .cell.free{ background:linear-gradient(160deg,var(--blue-dim),#1a1d24); border-color:var(--blue); font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; color:var(--white); }
   .cell .emoji{ font-size:22px; }
   .cell.hidden-clue{ color:var(--text-dim); font-family:'Fredoka',sans-serif; font-weight:600; font-size:12px; letter-spacing:0.02em; }
+  .cell.revealed{ animation:expandIn 0.35s ease; }
+  @keyframes expandIn{ from{ transform:scale(0.85); opacity:0.4; } to{ transform:scale(1); opacity:1; } }
   .cell.marked{ background:var(--blue-dim); border-color:var(--blue); }
   .cell.marked::after{
     content:""; position:absolute; inset:5px; border:2.5px solid var(--white); border-radius:6px;
@@ -237,11 +239,13 @@ function renderGrid(){
       cell.appendChild(span);
     } else {
       const cfg = state.config[i] || {hidden:true, revealText:item.full};
-      if(cfg.hidden){
+      const revealed = state.marks[i] || !cfg.hidden;
+      if(revealed){
+        cell.textContent = cfg.revealText || item.full;
+        cell.classList.add("revealed");
+      } else {
         cell.classList.add("hidden-clue");
         cell.textContent = item.teaser;
-      } else {
-        cell.textContent = cfg.revealText || item.full;
       }
     }
 
@@ -358,7 +362,7 @@ async function init(){
     }catch(e){
       badge.textContent = "sync unavailable, saving locally";
     }
-    setInterval(syncLoop, 4000);
+    setInterval(syncLoop, 1000);
   } else {
     badge.textContent = "local only \u2014 add a bucket id in the code to sync everyone";
   }
