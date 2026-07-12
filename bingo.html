@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Among Us Bingo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --space: #0b0e1a;
+    --space-2: #12172b;
+    --panel: #1a2039;
+    --panel-line: #2a3153;
+    --red: #d8433a;
+    --red-dim: #7a2a26;
+    --cyan: #3fe8d7;
+    --gold: #f0c34d;
+    --text: #eef1fb;
+    --text-dim: #9aa3c4;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(1.5px 1.5px at 20px 30px, #ffffff55 100%, transparent),
+      radial-gradient(1.5px 1.5px at 140px 90px, #ffffff33 100%, transparent),
+      radial-gradient(2px 2px at 60px 160px, #ffffff44 100%, transparent),
+      radial-gradient(1.5px 1.5px at 220px 40px, #ffffff33 100%, transparent),
+      radial-gradient(1.5px 1.5px at 300px 200px, #ffffff44 100%, transparent),
+      radial-gradient(2px 2px at 340px 120px, #ffffff33 100%, transparent),
+      linear-gradient(180deg, var(--space) 0%, var(--space-2) 100%);
+    background-repeat: repeat;
+    background-size: 400px 400px, 400px 400px, 400px 400px, 400px 400px, 400px 400px, 400px 400px, 100% 100%;
+    font-family:'Space Mono', monospace;
+    color:var(--text);
+    display:flex;
+    justify-content:center;
+    padding: 40px 16px 60px;
+  }
+  .wrap{ width:100%; max-width:620px; }
+  .eyebrow{
+    text-align:center;
+    letter-spacing:0.25em;
+    font-size:11px;
+    color:var(--cyan);
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  h1{
+    font-family:'Fredoka', sans-serif;
+    font-weight:700;
+    font-size:clamp(28px,7vw,42px);
+    text-align:center;
+    margin:0 0 6px;
+    letter-spacing:0.02em;
+  }
+  h1 span{ color:var(--red); }
+  .sub{
+    text-align:center;
+    color:var(--text-dim);
+    font-size:13px;
+    margin-bottom:28px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:8px;
+    position:relative;
+  }
+  .cell{
+    aspect-ratio:1;
+    background:var(--panel);
+    border:1px solid var(--panel-line);
+    border-radius:10px;
+    padding:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-size:11.5px;
+    line-height:1.35;
+    color:var(--text);
+    cursor:pointer;
+    user-select:none;
+    position:relative;
+    transition:transform 0.12s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+  .cell:hover{ border-color:var(--cyan); transform:translateY(-1px); }
+  .cell:active{ transform:translateY(0) scale(0.97); }
+  .cell.free{
+    background:linear-gradient(160deg, var(--red-dim), var(--panel));
+    border-color:var(--red);
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:14px;
+    color:var(--gold);
+  }
+  .cell .emoji{ font-size:24px; }
+  .cell.marked{
+    background:#20142a;
+    border-color:var(--gold);
+  }
+  .cell.marked::after{
+    content:"";
+    position:absolute;
+    inset:6px;
+    border:3px solid var(--gold);
+    border-radius:8px;
+    transform:rotate(-6deg);
+    box-shadow:0 0 12px #f0c34d55;
+    pointer-events:none;
+  }
+  .cell.win{
+    border-color:var(--cyan);
+    box-shadow:0 0 0 2px var(--cyan), 0 0 16px #3fe8d766;
+  }
+  .status{
+    text-align:center;
+    margin-top:22px;
+    min-height:28px;
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:18px;
+    color:var(--cyan);
+    letter-spacing:0.03em;
+  }
+  .controls{
+    display:flex;
+    justify-content:center;
+    margin-top:14px;
+  }
+  button{
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--text);
+    background:transparent;
+    border:1px solid var(--panel-line);
+    border-radius:8px;
+    padding:8px 18px;
+    cursor:pointer;
+    transition:border-color 0.2s ease, color 0.2s ease;
+  }
+  button:hover{ border-color:var(--red); color:var(--red); }
+  footer{
+    text-align:center;
+    margin-top:30px;
+    font-size:10.5px;
+    color:var(--text-dim);
+    letter-spacing:0.05em;
+  }
+  @media (max-width:420px){
+    .cell{ font-size:10px; padding:5px; border-radius:8px; }
+    .cell .emoji{ font-size:20px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">emergency meeting</div>
+  <h1>Among Us <span>Bingo</span></h1>
+  <div class="sub">tap a square when it happens live &middot; five in a row wins</div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="status" id="status"></div>
+  <div class="controls">
+    <button id="resetBtn">Reset card</button>
+  </div>
+
+  <footer>saves automatically on this device</footer>
+</div>
+
+<script>
+  const items = [
+    "Triple kill in one room",
+    {emoji:"👺"},
+    'Someone asks for "code"',
+    {emoji:"😭"},
+    "Lafda in chat",
+    "Racist comment caught in chat",
+    "Banned for using cuss words",
+    "100 IQ escape from a tricky spot",
+    "Just a funny random moment",
+    "Impostor self-reports",
+    "Fake task alibi busted",
+    "Someone rages or quits",
+    {free:true},
+    "Double kill, same room",
+    "Wrong kill call, blames innocent",
+    '"It wasn\'t me" said seriously',
+    "Vented right in front of everyone",
+    "Task rush right before meeting",
+    "Someone spams emojis in chat",
+    "Sus for following a crewmate",
+    "Close win, one impostor left",
+    'Someone says "bro" or "bruh"',
+    "AFK player gets voted out",
+    "Someone caught on the camera",
+    "Meeting called for basically nothing"
+  ];
+
+  const STORAGE_KEY = "amongUsBingoMarks";
+  const grid = document.getElementById("grid");
+  const statusEl = document.getElementById("status");
+
+  let marks = [];
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (Array.isArray(saved) && saved.length === 25) marks = saved;
+  } catch (e) {}
+  if (marks.length !== 25) marks = items.map(it => !!(it && it.free));
+
+  function save(){
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(marks)); } catch(e) {}
+  }
+
+  const lines = [];
+  for (let r = 0; r < 5; r++) lines.push([0,1,2,3,4].map(c => r*5+c));
+  for (let c = 0; c < 5; c++) lines.push([0,1,2,3,4].map(r => r*5+c));
+  lines.push([0,6,12,18,24]);
+  lines.push([4,8,12,16,20]);
+
+  function winningCells(){
+    const won = new Set();
+    lines.forEach(line => {
+      if (line.every(i => marks[i])) line.forEach(i => won.add(i));
+    });
+    return won;
+  }
+
+  function render(){
+    grid.innerHTML = "";
+    const won = winningCells();
+    items.forEach((item, i) => {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      if (item && item.free) cell.classList.add("free");
+      if (marks[i]) cell.classList.add("marked");
+      if (won.has(i)) cell.classList.add("win");
+
+      if (item && item.free) {
+        cell.textContent = "FREE";
+      } else if (item && item.emoji) {
+        const span = document.createElement("span");
+        span.className = "emoji";
+        span.textContent = item.emoji;
+        cell.appendChild(span);
+      } else {
+        cell.textContent = item;
+      }
+
+      cell.addEventListener("click", () => {
+        if (item && item.free) return;
+        marks[i] = !marks[i];
+        save();
+        render();
+      });
+
+      grid.appendChild(cell);
+    });
+
+    const lineCount = lines.filter(line => line.every(i => marks[i])).length;
+    statusEl.textContent = lineCount > 0 ? `BINGO! (${lineCount} line${lineCount > 1 ? "s" : ""})` : "";
+  }
+
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    marks = items.map(it => !!(it && it.free));
+    save();
+    render();
+  });
+
+  render();
+</script>
+</body>
+</html>
